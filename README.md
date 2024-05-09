@@ -170,7 +170,7 @@ R.A.G, or Retrieval Augmented Generation, is an advanced feature that allows you
 
 ## Memory
 
-![image]()
+![image](https://github.com/ChrisGarrattCGI/titanium-lite-1.4/assets/167450449/7fcac0b6-2117-42c0-b418-082fc7a51b9c)
 
 Persistent memory enhances user interaction by recording and storing chat histories, allowing for the AI to recall previous interactions with the user. This feature can leverage either NoSQL storage using MongoDB or Vector storage via Pinecone, and can record a conversation history of up to 100 messages. To use persistent memory you can click the "Memory" button at the left of the input box. A menu will pop up showing:
 

@@ -7,6 +7,8 @@ import {
   retrieveAIResponse,
   retrieveTextFromSpeech
 } from '@/app/services/chatService';
+
+import { persistentMemoryUtils } from '@/app/utils/persistentMemoryUtils';
 import { embedConversation } from '../services/embeddingService';
 import { queryVectorDbByNamespace } from '../services/vectorDbService';
 const nlp = winkNLP(model);
@@ -18,9 +20,12 @@ export const useMessageProcessing = (session: any) => {
   const isAssistantEnabled = watch('isAssistantEnabled');
   const isTextToSpeechEnabled = watch('isTextToSpeechEnabled');
   const isRagEnabled = watch('isRagEnabled');
+  const isLongTermMemoryEnabled = watch('isLongTermMemoryEnabled');
   const model = watch('model');
   const voice = watch('voice');
   const topK = watch('topK');
+  const memoryType = watch('memoryType');
+  const historyLength = watch('historyLength');
   const sentences = useRef<string[]>([]);
   const sentenceIndex = useRef<number>(0);
 
@@ -96,7 +101,9 @@ export const useMessageProcessing = (session: any) => {
     while (!isDone) {
       isDone = await processChunk();
     }
-
+    if (isLongTermMemoryEnabled) {
+      persistentMemoryUtils.append(memoryType, newMessage, userEmail);
+    }
     if (isTextToSpeechEnabled) {
       await retrieveTextFromSpeech(
         sentences.current[sentences.current.length - 1],
@@ -131,7 +138,6 @@ export const useMessageProcessing = (session: any) => {
     const doc = nlp.readDoc(aiResponseText);
     sentences.current = doc.sentences().out();
     const newMessage = addAiMessageToState(aiResponseText, aiResponseId);
-
     if (isTextToSpeechEnabled) {
       if (sentences.current.length > sentenceIndex.current + 1) {
         await retrieveTextFromSpeech(
@@ -150,19 +156,22 @@ export const useMessageProcessing = (session: any) => {
     try {
       setValue('isLoading', true);
       const newMessage = addUserMessageToState(message);
+      // Append the user message to the long-term memory
+      if (isLongTermMemoryEnabled) {
+        persistentMemoryUtils.append(memoryType, newMessage, userEmail);
+      }
       const aiResponseId = uuidv4();
       // enhance the user message with context and history
-      message = await enhanceMessage(message);
+      message = await enhanceMessage(message, newMessage, userEmail);
       const response = await retrieveAIResponse(
         message,
         userEmail,
-        false
+        isAssistantEnabled
       );
 
       if (!response) {
         return;
       }
-
       if (isAssistantEnabled) {
         await processResponse(response, aiResponseId);
       } else {
@@ -176,7 +185,9 @@ export const useMessageProcessing = (session: any) => {
   };
 
   async function enhanceMessage(
-    message: string
+    message: string,
+    newMessage: IMessage,
+    userEmail: string
   ) {
     let augmentedMessage = `
     FOLLOW THESE INSTRUCTIONS AT ALL TIMES:
@@ -191,13 +202,48 @@ export const useMessageProcessing = (session: any) => {
 CONTEXT:
 ${ragContext || ''}`;
     }
-
+    // Augment the message with the conversation history.
+    if (isLongTermMemoryEnabled && parseInt(historyLength) > 0) {
+      const conversationHistory = await persistentMemoryUtils.augment(
+        historyLength,
+        memoryType,
+        message,
+        newMessage,
+        session
+      );
+      augmentedMessage += `
+      
+HISTORY: 
+${conversationHistory || ''}`;
+    }
     message = `${augmentedMessage}
 
 PROMPT: 
 ${message}
           `;
+    console.info('Enhanced message: ', message);
     return message;
+  }
+
+  async function enhanceUserResponse(message: string, userEmail: string) {
+    const jsonMessage = [
+      {
+        text: message,
+        metadata: {
+          user_email: userEmail,
+        },
+      },
+    ];
+
+    const embeddedMessage = await embedConversation(jsonMessage, userEmail);
+
+    const vectorResponse = await queryVectorDbByNamespace(
+      embeddedMessage.embeddings,
+      userEmail,
+      topK
+    );
+
+    return vectorResponse.context;
   }
 
   async function processResponse(
@@ -220,27 +266,6 @@ ${message}
     } catch (error) {
       console.error('Error processing response: ', error);
     }
-  }
-
-  async function enhanceUserResponse(message: string, userEmail: string) {
-    const jsonMessage = [
-      {
-        text: message,
-        metadata: {
-          user_email: userEmail,
-        },
-      },
-    ];
-
-    const embeddedMessage = await embedConversation(jsonMessage, userEmail);
-
-    const vectorResponse = await queryVectorDbByNamespace(
-      embeddedMessage.embeddings,
-      userEmail,
-      topK
-    );
-
-    return vectorResponse.context;
   }
 
   async function processStream(

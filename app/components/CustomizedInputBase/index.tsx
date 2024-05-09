@@ -2,6 +2,7 @@ import Paper from '@mui/material/Paper';
 import InputBase from '@mui/material/InputBase';
 import IconButton from '@mui/material/IconButton';
 import SendIcon from '@mui/icons-material/Send';
+import LongTermMemoryIcon from '@mui/icons-material/Psychology';
 import VisionIcon from '@mui/icons-material/Visibility';
 import RagIcon from '@mui/icons-material/Storage';
 import { useTheme } from '@mui/material/styles';
@@ -14,6 +15,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import SpeechDialog from '../Speech/tts';
 import VisionDialog from '../Vision';
 import RagDialog from '../Rag';
+import LongTermMemoryDialog from '../LongTermMemory';
 
 const CustomizedInputBase = ({
   onSendMessage,
@@ -75,6 +77,12 @@ const CustomizedInputBase = ({
             horizontal: 'right',
           }}
         >
+          <MenuItem onClick={() => toggleDialog('memory')}>
+            <ListItemIcon>
+              <LongTermMemoryIcon />
+            </ListItemIcon>
+            Memory
+          </MenuItem>
           <MenuItem onClick={() => toggleDialog('rag')}>
             <ListItemIcon>
               <RagIcon />
@@ -111,6 +119,11 @@ const CustomizedInputBase = ({
           </IconButton>
         </Tooltip>
       </Paper>
+
+      <LongTermMemoryDialog
+        open={isDialogOpen.memory}
+        onClose={() => toggleDialog('memory')}
+      />
 
       <RagDialog
         open={isDialogOpen.rag}

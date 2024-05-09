@@ -13,7 +13,8 @@ export const useCustomInput = ({ onSendMessage }: UseCustomInputProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState({
     rag: false,
     speech: false,
-    vision: false
+    vision: false,
+    memory: false
   });
   const { setValue } = useFormContext();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -57,6 +58,16 @@ export const useCustomInput = ({ onSendMessage }: UseCustomInputProps) => {
       setValue('chunkSize', response.chunkSize);
       setValue('chunkBatch', response.chunkBatch);
       setValue('parsingStrategy', response.parsingStrategy);
+    }
+    // Prefetch long term memory data
+    response = await retrieveServices({
+      userEmail,
+      serviceName: 'memory',
+    });
+    if (response.isLongTermMemoryEnabled !== undefined) {
+      setValue('isLongTermMemoryEnabled', response.isLongTermMemoryEnabled);
+      setValue('memoryType', response.memoryType);
+      setValue('historyLength', response.historyLength);
     }
   }, [session?.user?.email, setValue]);
 

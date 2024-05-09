@@ -8,6 +8,9 @@ Titanium is a modern web application built with Next.js, leveraging the latest O
 - Speech (STT) ✅ (Available via button toggle in the input chat box)
 - Vision via 'gpt-4-vision-preview'. Currently supports Image Analysis for multiple urls. File uploads may come later, but not a priority.✅
 - Retrieval Augmented Generation (RAG), Using advanced document parsing by Unstructured.io API and Pinecone Serverless for fast and efficient indexing & retrieval.✅
+- Persistent multi-user memory.✅
+  - NoSQL Based.✅
+  - Vector Based.✅
 
 # Libraries
 

@@ -21,4 +21,9 @@ interface IUser {
   chunkSize: string;
   chunkBatch: string;
   parsingStrategy: string;
+
+  // persistent memory
+  isLongTermMemoryEnabled: boolean;
+  memoryType: string;
+  historyLength: string;
 }

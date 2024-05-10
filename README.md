@@ -8,6 +8,9 @@ Titanium is a modern web application built with Next.js, leveraging the latest O
 - Speech (STT) ✅ (Available via button toggle in the input chat box)
 - Vision via 'gpt-4-vision-preview'. Currently supports Image Analysis for multiple urls. File uploads may come later, but not a priority.✅
 - Retrieval Augmented Generation (RAG), Using advanced document parsing by Unstructured.io API and Pinecone Serverless for fast and efficient indexing & retrieval.✅
+- Persistent multi-user memory.✅
+  - NoSQL Based.✅
+  - Vector Based.✅
 
 # Libraries
 
@@ -135,6 +138,7 @@ To access the features, you can click the hamburger icon at the left of the inpu
 - Speech
 - Vision
 - R.A.G. (Retrieval Augmented Generation)
+- Memory
 
 ## Streaming Chat
 
@@ -163,6 +167,15 @@ R.A.G, or Retrieval Augmented Generation, is an advanced feature that allows you
 - Top K: The number of documents to return using semantic search. More documents will give the AI more information to work with, but it will also take longer to process.
 - Batch Size: The number of documents to process at once. Due to limitations on how much data can be upserted to the Vector Index at once, a large number of documents maybe rejected, so a default of 250 can be used as a default.
 - Parsing Strategy: The strategy to use for parsing the document. Each of the options has its own strengths and weaknesses, so you may need to experiment to find the best one for your use case. If you care more for the quality of the parsed data, you can use the "Hi Res" option. If you care more for the speed of the parsing, you can use the "Fast" option. Otherwise, "auto" will work fine.
+
+## Memory
+
+![image](https://github.com/ChrisGarrattCGI/titanium-lite-1.4/assets/167450449/7fcac0b6-2117-42c0-b418-082fc7a51b9c)
+
+Persistent memory enhances user interaction by recording and storing chat histories, allowing for the AI to recall previous interactions with the user. This feature can leverage either NoSQL storage using MongoDB or Vector storage via Pinecone, and can record a conversation history of up to 100 messages. To use persistent memory you can click the "Memory" button at the left of the input box. A menu will pop up showing:
+
+- Memory Type: The type of database technology to leverage - you can choose between "NoSQL" to use MongoDB or "Vector" to use Pinecone.
+- History Length: The number of chat messages to store in memory - you can choose between "None", "10", "20", "50" and "100". 
 
 # Feature Combinations
 
